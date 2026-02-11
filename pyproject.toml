@@ -1,6 +1,6 @@
 [project]
 name = "mem0-mcp"
-version = "0.1.0"
+version = "1.0.0"
 description = "MCP server for self-hosted Mem0 with Qdrant vector + Neo4j graph memory"
 readme = "README.md"
 requires-python = ">=3.10"

@@ -18,6 +18,9 @@ API_BASE = os.environ.get("MEM0_API_BASE", "http://127.0.0.1:8765")
 QDRANT_URL = os.environ.get("MEM0_QDRANT_URL", "http://127.0.0.1:6333")
 OLLAMA_URL = os.environ.get("MEM0_OLLAMA_URL", "http://127.0.0.1:11435")
 EMBED_MODEL = os.environ.get("MEM0_EMBED_MODEL", "nomic-embed-text:latest")
+EMBED_PROVIDER = os.environ.get("MEM0_EMBED_PROVIDER", "ollama")  # "ollama" or "openai"
+EMBED_API_KEY = os.environ.get("MEM0_EMBED_API_KEY", "")
+EMBED_BASE_URL = os.environ.get("MEM0_EMBED_BASE_URL", "")
 COLLECTION = os.environ.get("MEM0_COLLECTION", "openmemory")
 USER_ID = os.environ.get("MEM0_USER_ID", "justin")
 
@@ -39,6 +42,15 @@ mcp = FastMCP("mem0", instructions=(
 api_client = httpx.Client(base_url=API_BASE, timeout=30)
 qdrant_client = httpx.Client(base_url=QDRANT_URL, timeout=30)
 ollama_client = httpx.Client(base_url=OLLAMA_URL, timeout=60)
+embed_client = (
+    httpx.Client(
+        base_url=EMBED_BASE_URL,
+        headers={"Authorization": f"Bearer {EMBED_API_KEY}"},
+        timeout=30,
+    )
+    if EMBED_PROVIDER == "openai" and EMBED_BASE_URL
+    else None
+)
 
 _neo4j_driver = None
 
@@ -57,7 +69,14 @@ def _get_neo4j():
 
 
 def _embed(text: str) -> list[float]:
-    """Get embedding vector from Ollama."""
+    """Get embedding vector from configured provider (Ollama or OpenAI-compatible)."""
+    if EMBED_PROVIDER == "openai" and embed_client:
+        resp = embed_client.post(
+            "/embeddings",
+            json={"model": EMBED_MODEL, "input": text},
+        )
+        resp.raise_for_status()
+        return resp.json()["data"][0]["embedding"]
     resp = ollama_client.post(
         "/api/embed",
         json={"model": EMBED_MODEL, "input": text},

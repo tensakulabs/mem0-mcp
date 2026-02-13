@@ -148,6 +148,8 @@ def add_memory(text: str) -> str:
     )
     resp.raise_for_status()
     data = resp.json()
+    if data is None:
+        return f"Memory submitted successfully (stored via {API_BASE})"
     results = data.get("results", data.get("items", []))
     if results:
         stored = [

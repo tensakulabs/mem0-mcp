@@ -142,11 +142,14 @@ def add_memory(text: str) -> str:
         text: The fact or information to remember (e.g., "Justin prefers
               TypeScript over Python for new projects")
     """
-    resp = api_client.post(
-        "/api/v1/memories/",
-        json={"text": text, "user_id": USER_ID},
-    )
-    resp.raise_for_status()
+    try:
+        resp = api_client.post(
+            "/api/v1/memories/",
+            json={"text": text, "user_id": USER_ID},
+        )
+        resp.raise_for_status()
+    except Exception as e:
+        return f"Error calling mem0 API: {type(e).__name__}: {e}"
     data = resp.json()
     if data is None:
         return f"Memory submitted successfully (stored via {API_BASE})"
@@ -155,7 +158,7 @@ def add_memory(text: str) -> str:
         stored = [
             r.get("memory", r.get("text", ""))
             for r in results
-            if r.get("event") in ("ADD", "UPDATE", None)
+            if r and r.get("event") in ("ADD", "UPDATE", None)
         ]
         if stored:
             return f"Stored {len(stored)} memory/memories: " + "; ".join(stored)

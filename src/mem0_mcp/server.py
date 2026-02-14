@@ -39,7 +39,7 @@ mcp = FastMCP("mem0", instructions=(
 
 # --- Clients ---
 
-api_client = httpx.Client(base_url=API_BASE, timeout=30)
+api_client = httpx.Client(base_url=API_BASE, timeout=120)
 qdrant_client = httpx.Client(base_url=QDRANT_URL, timeout=30)
 ollama_client = httpx.Client(base_url=OLLAMA_URL, timeout=60)
 embed_client = (
